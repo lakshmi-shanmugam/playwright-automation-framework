@@ -1,0 +1,211 @@
+PLAYWRIGHT BEGINNER NOTES
+
+1. Basic test template
+
+```ts
+test.describe('Suite name', () => {
+  test('test case name', async ({ page }) => {
+    const pageObject = new PageObject(page);
+
+    // Arrange
+
+    // Act
+
+    // Assert
+  });
+});
+```
+
+2. What each part means
+
+`test.describe('Suite name', () => { ... })`
+- Groups related tests together
+- Example: all register tests
+
+`test('test case name', async ({ page }) => { ... })`
+- Defines one actual test
+- `page` is the browser tab used by Playwright
+
+`expect(...)`
+- Verifies the result
+- Example: check text, URL, error, visibility
+
+3. Easy way to think about every test
+
+Arrange
+- Open the page
+- Create test data
+
+Act
+- Fill inputs
+- Click buttons
+- Submit forms
+
+Assert
+- Check success message
+- Check error message
+- Check URL or visible elements
+
+4. Pattern used in this project
+
+```ts
+test('duplicate email error', async ({ page }) => {
+  const registerPage = new RegisterPage(page);
+
+  await registerPage.goto();
+  await registerPage.registerUser(
+    REGISTER.firstName,
+    REGISTER.lastName,
+    'test@gmail.com',
+    REGISTER.password
+  );
+
+  await expect(page.locator('.validation-summary-errors')).toBeVisible();
+});
+```
+
+5. What these lines mean
+
+`const registerPage = new RegisterPage(page);`
+- Creates the page object helper
+
+`await registerPage.goto();`
+- Opens the register page
+
+`await registerPage.registerUser(...);`
+- Fills the form and clicks Register
+
+`await expect(...).toBeVisible();`
+- Checks that an element is shown on the page
+
+6. Common Playwright commands
+
+Run all tests:
+`npx playwright test`
+
+Run one file:
+`npx playwright test tests/auth/register.spec.ts`
+
+Run one suite:
+`npx playwright test tests/auth/register.spec.ts -g "Register-validation and negative tests"`
+
+Run one test:
+`npx playwright test -g "should show error when email already exists"`
+
+7. Common assertions
+
+```ts
+await expect(page).toHaveURL('/');
+await expect(page.locator('.result')).toContainText('Your registration completed');
+await expect(page.locator('.validation-summary-errors')).toBeVisible();
+await expect(page.getByRole('link', { name: email, exact: true })).toBeVisible();
+```
+
+8. Common mistakes
+
+- Forgetting `await`
+- Putting `page` inside `test.describe(...)`
+- Forgetting to open the page with `goto()`
+- Writing values without actually using them
+
+Wrong:
+
+```ts
+REGISTER.firstName,
+REGISTER.lastName,
+'abc@gmail.com'
+```
+
+Right:
+
+```ts
+await registerPage.registerUser(
+  REGISTER.firstName,
+  REGISTER.lastName,
+  'abc@gmail.com',
+  REGISTER.password
+);
+```
+
+9. Files in this project
+
+`playwright.config.ts`
+- Global Playwright settings
+- Base URL, browser, reporter, headless/headed mode
+
+`utils/testData.ts`
+- Stores reusable test data like emails and passwords
+
+`pages/RegisterPage.ts`
+- Page Object Model for the register page
+
+`pages/LoginPage.ts`
+- Page Object Model for login
+
+`tests/auth/register.spec.ts`
+- Register tests
+
+`tests/auth/login.spec.ts`
+- Login tests
+
+10. Memory shortcut
+
+`describe` = group
+`test` = one test
+`page` = browser tab
+`locator` = find element
+`expect` = verify result
+`await` = wait for the step to finish
+
+11. Constructor in Page Object Model
+
+```ts
+constructor(private page: Page) {
+  // this.page = page;
+}
+```
+
+What it means:
+
+- `constructor(...)` runs when you create the class object
+- `private page: Page` stores the Playwright page inside the class
+- `private` means it is used only inside that class
+
+Example:
+
+```ts
+const registerPage = new RegisterPage(page);
+```
+
+This passes the Playwright `page` from the test into the `RegisterPage` class.
+
+Then inside the class you can use:
+
+```ts
+await this.page.goto('/register');
+await this.page.locator('#Email').fill(email);
+```
+
+Why `this.page = page;` is commented:
+
+```ts
+constructor(private page: Page)
+```
+
+is a TypeScript shortcut. It already:
+
+- creates the `page` property
+- assigns the passed value to it
+
+Long version:
+
+```ts
+private page: Page;
+
+constructor(page: Page) {
+  this.page = page;
+}
+```
+
+Both do the same thing. The short version is cleaner.
+
