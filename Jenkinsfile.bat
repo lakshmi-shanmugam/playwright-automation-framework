@@ -6,7 +6,7 @@ pipeline {
   }
 
   environment {
-    CI = 'true'
+    CI = 'false'
   }
 
   stages {
@@ -18,7 +18,7 @@ pipeline {
 
     stage('Install dependencies') {
       steps {
-        bat 'npm ci'
+        bat 'npm install'
         bat 'npx playwright install chromium'
       }
     }
@@ -32,14 +32,11 @@ pipeline {
 
   post {
     always {
-      // Allure report
       allure([
         includeProperties: false,
         jdk: '',
         results: [[path: 'allure-results']]
       ])
-
-      // Playwright HTML report
       publishHTML([
         allowMissing: true,
         alwaysLinkToLastBuild: true,
@@ -48,7 +45,6 @@ pipeline {
         reportFiles: 'index.html',
         reportName: 'Playwright HTML Report'
       ])
-
       archiveArtifacts artifacts: 'allure-results/**, playwright-report/**, test-results/**', allowEmptyArchive: true
     }
   }
