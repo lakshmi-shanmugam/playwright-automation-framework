@@ -10,7 +10,6 @@ pipeline {
   }
 
   stages {
-
     stage('Checkout') {
       steps {
         checkout scm
@@ -20,7 +19,7 @@ pipeline {
     stage('Install dependencies') {
       steps {
         bat 'npm ci'
-        bat 'npx playwright install'
+        bat 'npx playwright install chromium'
       }
     }
 
@@ -29,7 +28,6 @@ pipeline {
         bat 'npx playwright test'
       }
     }
-
   }
 
   post {
