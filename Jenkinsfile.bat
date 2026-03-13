@@ -32,11 +32,23 @@ pipeline {
 
   post {
     always {
+      // Allure report
       allure([
         includeProperties: false,
         jdk: '',
         results: [[path: 'allure-results']]
       ])
+
+      // Playwright HTML report
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'playwright-report',
+        reportFiles: 'index.html',
+        reportName: 'Playwright HTML Report'
+      ])
+
       archiveArtifacts artifacts: 'allure-results/**, playwright-report/**, test-results/**', allowEmptyArchive: true
     }
   }
