@@ -32,6 +32,7 @@ pipeline {
 
   post {
     always {
+      junit 'test-results/results.xml'
       allure([
         includeProperties: false,
         jdk: '',
